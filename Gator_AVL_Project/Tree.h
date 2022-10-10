@@ -17,6 +17,10 @@ public:
 
 	}
 
+	Node* getRoot() {
+		return root;
+	}
+
 	//currNode will update recursively as it iterates through tree, newNode is the node that will be created in main when an insert is requested
 	void insertNode(Node *currNode, Node *newNode) {
 
@@ -51,6 +55,10 @@ public:
 				insertNode(currNode->rightChild, newNode);
 			}
 		}
+		else { //New node ID equals an existing ID, so print unsuccessful and do NOT add
+			cout << "unsuccessful" << endl;
+
+		}
 	}
 
 	//Will be passed a newly inserted node and will perform rotations if necessary, otherwise will do nothing
@@ -63,7 +71,12 @@ public:
 		Node* Parent = node->parent;
 		if (findBalanceFactor(Grandparent) == 2) { //If tree is left heavy
 			if (findBalanceFactor(Parent) == 1) { //Perform right rotation
-				Grandparent->parent->leftChild = Parent; //Modify great Grandparents child
+				if (Grandparent->parent != nullptr) { //Will prevent out of bounds error if great grandparent node does not exist
+					Grandparent->parent->leftChild = Parent; //Modify great Grandparents child
+				}
+				else { //If grandParent's parent is nullptr, then it is root node so set root to parent
+					root = Parent;
+				}
 
 				Parent->parent = Grandparent->parent; //Modify the parent's parent and child
 				Parent->rightChild = Grandparent;
@@ -72,6 +85,10 @@ public:
 				Grandparent->leftChild = nullptr;
 			}
 			else if (findBalanceFactor(Parent) == -1) {//Perform left right rotation
+				if (Grandparent == root) { //If the current grandparent is the root, the parent should be the new root
+					root = node;
+				}
+
 				//Left rotation
 				Grandparent->leftChild = node; //Change grandparent left child to node
 
@@ -91,6 +108,10 @@ public:
 		}
 		else if (findBalanceFactor(Grandparent) == -2) { //If tree is right heavy
 			if (findBalanceFactor(Parent) == 1) { //Perform right left rotation
+				if (Grandparent == root) { //If the current grandparent is the root, the parent should be the new root
+					root = node;
+				}
+
 				//Right rotation
 				Grandparent->rightChild = node; //Change grandparent right child to node
 
@@ -108,7 +129,12 @@ public:
 				Grandparent->rightChild = nullptr;
 			}
 			else if (findBalanceFactor(Parent) == -1) {//Perform left rotation
-				Grandparent->parent->rightChild = Parent; //Modify great Grandparents child
+				if (Grandparent->parent != nullptr) { //Will prevent out of bounds error if great grandparent node does not exist
+					Grandparent->parent->rightChild = Parent; //Modify great Grandparents child
+				}
+				else { //If grandParent's parent is nullptr, then it is root node so set root to Parent
+					root = Parent;
+				}
 
 				Parent->parent = Grandparent->parent; //Modify the parent's parent and child
 				Parent->leftChild = Grandparent;
@@ -155,9 +181,9 @@ public:
 		}
 		names.push_back(node->NAME);
 
-		storeInOrder(node->leftChild, names);
+		storePreOrder(node->leftChild, names);
 
-		storeInOrder(node->rightChild, names);
+		storePreOrder(node->rightChild, names);
 	}
 
 	//If user tries to printPostOrder, call this function with root node of Tree
@@ -166,9 +192,9 @@ public:
 			return;
 		}
 
-		storeInOrder(node->leftChild, names);
+		storePostOrder(node->leftChild, names);
 
-		storeInOrder(node->rightChild, names);
+		storePostOrder(node->rightChild, names);
 
 		names.push_back(node->NAME);
 	}
@@ -182,32 +208,26 @@ public:
 		names.clear();
 	}
 
-	//return id associated with name. If not found, return -1
-	int searchName(string n, Node* node) { //node will start with root node
+	//Find all instances of given Name in a vector to be printed in main
+	void searchName(string n, Node* node, vector<int>& idNums) { //node will start with root node
 		if (node == nullptr) {
-			return -1;
+			return;
 		}
 
-		else if (node->NAME == n) { //If the given name is found, return that node's ID number
-			return node->ID;
+		else if (node->NAME == n) { //If the given name is found, return push_back that node's ID number
+			idNums.push_back(node->ID);
 		}
-		int searchLeft = searchName(n, node->leftChild);
-		if (searchLeft != -1) { //If a value other than -1 is returned, then return that value
-			return searchLeft;
-		}
+		
+		searchName(n, node->leftChild, idNums);
+		searchName(n, node->rightChild, idNums);
 
-		int searchRight = searchName(n, node->rightChild);
-		if (searchRight != -1) { //If a value other than -1 is returned, then return that value
-			return searchRight; 
-		}
-
-		return -1; //If name is not found, return -1
+		return;
 	}
 
 	//Search for a given ID, and print the name if found or unsuccessful if not found
 	void searchID(int id, Node* node) {
 		if (node == nullptr) {//If node equals nullptr, then ID does not exist
-			cout << "Unsuccessful" << endl;
+			cout << "unsuccessful" << endl;
 		}
 		else if (node->ID == id) { //If id is equal to nodes ID, print the name of that node
 			cout << node->NAME << endl;
@@ -223,16 +243,23 @@ public:
 	//Search for a given ID, and remove it if found. Also, print successful or unsuccessful
 	void removeID(int id, Node* node) {
 		if (node == nullptr) {//If node equals nullptr, then ID does not exist
-			cout << "Unsuccessful" << endl;
+			cout << "unsuccessful" << endl;
 		}
 		else if (node->ID == id) { //If id is equal to nodes ID, modify the pointers and delete that node
+
 			if (node->rightChild == nullptr && node->leftChild == nullptr) { //Check if the node to be deleted has no children
-				//Figure out if node is a left or right child of its parent and have the parent point to nullptr instead of node
-				if (node->parent->leftChild == node) {
-					node->parent->leftChild = nullptr;
+				//If no children and no parent, then node is root node. reassign root to nullptr
+				if (node->parent == nullptr) {
+					root = nullptr;
 				}
-				else {
-					node->parent->rightChild = nullptr;
+				//Figure out if node is a left or right child of its parent and have the parent point to nullptr instead of node
+				else if (node->parent != nullptr) { //Make sure the node in question has a parent
+					if (node->parent->leftChild == node) {
+						node->parent->leftChild = nullptr;
+					}
+					else {
+						node->parent->rightChild = nullptr;
+					}
 				}
 				delete node;
 			}
@@ -241,17 +268,24 @@ public:
 				Node* successor = findInorderSuccessor(node->rightChild);
 				successor->parent = node->parent;
 				successor->leftChild = node->leftChild;
-				successor->rightChild = node->rightChild;
+				if (node->rightChild != successor) { //Prevents successor from having itself as rightchild
+					successor->rightChild = node->rightChild;
+					successor->rightChild->parent = successor;
+				}
 
 				successor->leftChild->parent = successor; //Set the nodes children to have the successor as a parent
-				successor->rightChild->parent = successor;
 
 				//Figure out if node is a left or right child of its parent and place the successor accordingly
-				if (node->parent->leftChild == node) {
-					node->parent->leftChild = successor;
+				if (node->parent != nullptr) { //Make sure the node in question has a parent
+					if (node->parent->leftChild == node) {
+						node->parent->leftChild = successor;
+					}
+					else {
+						node->parent->rightChild = successor;
+					}
 				}
-				else {
-					node->parent->rightChild = successor;
+				else {//The node in question does not have a parent (node was root node)
+					root = successor;
 				}
 				delete node;
 			}
@@ -269,16 +303,21 @@ public:
 				child->parent = node->parent;
 
 				//Figure out if node is a left or right child of its parent and place the new child accordingly
-				if (node->parent->leftChild == node) {
-					node->parent->leftChild = child;
+				if (node->parent != nullptr) { //Make sure the node in question has a parent
+					if (node->parent->leftChild == node) {
+						node->parent->leftChild = child;
+					}
+					else {
+						node->parent->rightChild = child;
+					}
 				}
-				else {
-					node->parent->rightChild = child;
+				else { //The node in question does not have a parent (it was root node)
+					root = child;
 				}
 
 				delete node;
 			}
-			cout << "Successful" << endl;
+			cout << "successful" << endl;
 		}
 		else if (id < node->ID) { //If id is less than nodes ID, recursive call with nodes left child
 			removeID(id, node->leftChild);

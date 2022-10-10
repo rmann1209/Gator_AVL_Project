@@ -1,4 +1,4 @@
-21
+22
 insert "three" 33333333
 insert "two" 22222222
 insert "four" 44444444
@@ -6,9 +6,9 @@ insert "one" 11111111
 insert "five" 55555555
 insert "six" 66666666
 insert "seven" 77777777
-printInOrder
-printPreOrder
-printPostOrder
+printInorder
+printPreorder
+printPostorder
 printLevelCount
 search 55555555
 search 33333333
@@ -18,5 +18,6 @@ search "two"
 remove 22222222
 remove 99999999
 remove 77777777
-removeInOrder 4
-removeInOrder 17
+removeInorder 2
+removeInorder 17
+printInorder

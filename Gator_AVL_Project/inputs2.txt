@@ -1,0 +1,10 @@
+9
+insert "three" 33333333
+insert "one" 11111111
+insert "two" 22222222
+printPreorder
+insert "four" 44444444
+insert "five" 55555555
+printInorder
+removeInorder 2
+printInorder

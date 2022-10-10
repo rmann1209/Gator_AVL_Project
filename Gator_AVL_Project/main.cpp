@@ -19,33 +19,31 @@ void readFile(string fileName, vector <string>& inputs) {
 
 int main() {
 	Tree *tree = new Tree();
-	
-	vector <string> inputs; //Will hold each line of user input as its own index
-	readFile("inputs.txt", inputs);
-	int numCommands = stoi(inputs[0]); //The first value given to us is the number of instructions to run
-
-	/*	USE TO VERIFY READFILE IS WORKING AS INTENDED
-	for (int i = 0; i < inputs.size(); i++) {
-		cout << "Input: " << inputs[i] << endl;
-	}
-	*/
 
 	vector <string> names; //Will be used to hold names in a specified order for printing, cleared after each use
 	string userIn; //Will be the first word in user input
 	string name; //Will hold name specified by user, if necessary
 	string id; //Will hold ID num specified by user, if necessary
+	
+	vector <string> inputs; //Will hold each line of user input as its own index
+	//readFile("inputs3.txt", inputs);
+	int numCommands; //The first value given to us is the number of instructions to run
+	getline(cin, userIn);
+	numCommands = stoi(userIn);
 
 	//Run for each index in input vector and perform related command
-	for (int i = 1; i <= numCommands; i++) {
+	for (int i = 0; i < numCommands; i++) {
+		getline(cin, userIn); //Store line in userIn string variable
+		inputs.push_back(userIn); //inputs vector is used bc I initially wrote functionality to support read file, this allows me to still utilize that :)
+
 		userIn = inputs[i].substr(0, inputs[i].find(' ')); //Put the first word of the input in userIn
 
 		if (userIn == ("insert")) {
 			inputs[i].erase(0, inputs[i].find(' ') + 1); //Erase the first word in the input vector
 			//cout << "This is vector after first word is erased: " << inputs[i] << endl;
 
-			//FIXME: Do we not need to check for opening and closing quotations??
 			if (inputs[i].at(0) != '\"' || inputs[i].at(inputs[i].find(' ') - 1) != '\"') {
-				cout << "Unsuccessful" << endl;
+				cout << "unsuccessful" << endl;
 				continue;
 			}
 			else {
@@ -54,7 +52,7 @@ int main() {
 
 			}
 			if (inputs[i].size() != 8) { //If the remaining value is not 8 digits, the ID number is the wrong size
-				cout << "Unsuccessful" << endl;
+				cout << "unsuccessful" << endl;
 				continue;
 			}
 			else {
@@ -62,34 +60,36 @@ int main() {
 				//check each character, if a nondigit is detected then not valid number
 				for (int j = 0; j < 8; j++) {
 					if (!std::isdigit(id.at(j))) {
-						cout << "Unsuccessful" << endl; //If the character at j is not a digit, print unsuccessful and break
+						cout << "unsuccessful" << endl; //If the character at j is not a digit, print unsuccessful and break
 						break;
 					}
 				}
 				id = inputs[i]; //If this point is reached, id is valid 8 digit number & name was succesfully added
 
 				Node *node = new Node(name, stoi(id));
-				tree->insertNode(tree->root, node);
+				//cout << "Adding \"" << node->NAME << "\" " << node->ID << endl;
+				tree->insertNode(tree->getRoot(), node);
+				//cout << "Root node is " << tree->getRoot()->ID << endl;
 			}
 		}
 
-		else if (userIn == "printInOrder") {
-			tree->storeInOrder(tree->root, names);
+		else if (userIn == "printInorder") {
+			tree->storeInOrder(tree->getRoot(), names);
 			tree->printNames(names);
 		}
 
-		else if (userIn == "printPreOrder") {
-			tree->storePreOrder(tree->root, names);
+		else if (userIn == "printPreorder") {
+			tree->storePreOrder(tree->getRoot(), names);
 			tree->printNames(names);
 		}
 
-		else if (userIn == "printPostOrder") {
-			tree->storePostOrder(tree->root, names);
+		else if (userIn == "printPostorder") {
+			tree->storePostOrder(tree->getRoot(), names);
 			tree->printNames(names);
 		}
 
 		else if (userIn == "printLevelCount") {
-			int level = tree->findLevelCount(tree->root);
+			int level = tree->findLevelCount(tree->getRoot());
 			cout << level << endl;
 		}
 
@@ -99,14 +99,20 @@ int main() {
 			if (inputs[i].at(0) == '\"' && inputs[i].at(inputs[i].size() - 1) == '\"') {
 				name = inputs[i].substr(1, inputs[i].size() - 2); //Put the second word of the input in name (+1 and -2 at beginning and end to avoid quotes)
 				
-				//cout << "Searching for: " << name << endl;
-				int idNum = tree->searchName(name, tree->root); //Will hold ID num if found, otherwise -1
-				if (idNum == -1) {
-					cout << "Unsuccessful" << endl;
+				vector <int> idNums; //Will store all ID occurrences with matching name
+				//cout << "Searching for " << name << endl;
+				tree->searchName(name, tree->getRoot(), idNums);
+
+				if (idNums.size() == 0) {
+					cout << "unsuccessful" << endl;
 				}
 				else {
-					cout << idNum << endl;
+					//Print each id value stored
+					for (int k = 0; k < idNums.size(); k++) {
+						cout << idNums[k] << endl;
+					}
 				}
+				idNums.clear();
 			}
 
 			else if(inputs[i].size() == 8) { //If the remaining value is not 8 digits, the ID number is the wrong size
@@ -114,14 +120,14 @@ int main() {
 				//check each character, if a nondigit is detected then not valid number
 				for (int j = 0; j < 8; j++) {
 					if (!std::isdigit(id.at(j))) {
-						cout << "Unsuccessful" << endl; //If the character at j is not a digit, print unsuccessful and break
+						cout << "unsuccessful" << endl; //If the character at j is not a digit, print unsuccessful and break
 						break;
 					}
 				}
-				tree->searchID(stoi(id), tree->root); //If this point is reached, id is valid 8 digit number so call the search for corresponding name
+				tree->searchID(stoi(id), tree->getRoot()); //If this point is reached, id is valid 8 digit number so call the search for corresponding name
 			}
 			else {
-				cout << "Unsuccessful" << endl;
+				cout << "unsuccessful" << endl;
 			}
 		}
 
@@ -129,7 +135,7 @@ int main() {
 			inputs[i].erase(0, inputs[i].find(' ') + 1); //Erase the first word in the input vector and delimeter
 
 			if (inputs[i].size() != 8) { //If the remaining value is not 8 digits, the ID number is the wrong size
-				cout << "Unsuccessful" << endl;
+				cout << "unsuccessful" << endl;
 				continue;
 			}
 			else {
@@ -140,19 +146,21 @@ int main() {
 				for (int j = 0; j < 8; j++) {
 					if (!std::isdigit(id.at(j))) {
 						validID = false;
-						cout << "Unsuccessful" << endl; //If the character at j is not a digit, print unsuccessful and break
+						cout << "unsuccessful" << endl; //If the character at j is not a digit, print unsuccessful and break
 						break;
 					}
 				}
 				if (validID) {//if ID is valid 8 digit number, call removeID function
-					tree->removeID(stoi(id), tree->root);
+					//cout << "Removing id num " << stoi(id) << endl;
+					tree->removeID(stoi(id), tree->getRoot());
 				}
 			}
 		}
 
-		else if (userIn == "removeInOrder") {
+		else if (userIn == "removeInorder") {
 			inputs[i].erase(0, inputs[i].find(' ') + 1); //Erase the first word in the input vector and delimeter
 			id = inputs[i]; //String id will hold the value provided by user
+			//cout << "Index to remove is " << id << endl;
 
 			bool validID = true;
 			//check each character, if a nondigit is detected then not valid number
@@ -163,26 +171,27 @@ int main() {
 					break;
 				}
 			}
-
+			
 			if (validID) {
 				vector <Node*> nodes;
-				tree->storeInOrderNodes(tree->root, nodes); //Vector names will now hold all values in order
+				tree->storeInOrderNodes(tree->getRoot(), nodes); //Vector names will now hold all values in order
 				int index = stoi(id); //Will hold the user provided index value as an int
-				if (index >= nodes.size() || index < 0) { //If user provided index
+				if (index >= nodes.size() || index < 0) { //If user provided index is invalid
 					cout << "unsuccessful" << endl;
 				}
 				else {
 					//cout << nodes[index]->ID << endl;
-					tree->removeID(nodes[index]->ID, tree->root);
+					tree->removeID(nodes[index]->ID, tree->getRoot());
 					nodes.clear();
 				}
 			}
 		}
 
 		else { //Command is not valid
-			cout << "Unsuccessful" << endl;
+			cout << "unsuccessful" << endl;
 		}
 	}
 
+	delete tree;
 	return 0;
 };

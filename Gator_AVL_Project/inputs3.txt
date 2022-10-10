@@ -1,0 +1,9 @@
+8
+insert "three" 33333333
+insert "one" 11111111
+insert "two" 22222222
+removeInorder 1
+printInorder
+remove 33333333
+printInorder
+insert asdf 12344321

@@ -33,12 +33,27 @@ public:
 		return *this;
 	}
 
-	//FIXME: Destructor
 	~Node() {
 
 	}
 
 	string getName() {
 		return NAME;
+	}
+
+	int getID() {
+		return ID;
+	}
+
+	Node* getParent() {
+		return parent;
+	}
+
+	Node* getLeftChild() {
+		return leftChild;
+	}
+
+	Node* getRightChild() {
+		return rightChild;
 	}
 };
