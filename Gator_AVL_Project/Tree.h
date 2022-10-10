@@ -323,10 +323,6 @@ public:
 			removeID(id, node->leftChild);
 		}
 		else {	//If none of above, then id must be greater than node ID, so recursive call with nodes right child
-			//cout << "ID num: " << id << " called rightchild: " << node->rightChild << endl;
-			//if (node->rightChild != nullptr) {
-			//	cout << "ERROR: not nullptr" << endl;
-			//}
 			removeID(id, node->rightChild);
 		}
 	}

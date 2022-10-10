@@ -38,17 +38,32 @@ int main() {
 
 		userIn = inputs[i].substr(0, inputs[i].find(' ')); //Put the first word of the input in userIn
 
+		
 		if (userIn == ("insert")) {
 			inputs[i].erase(0, inputs[i].find(' ') + 1); //Erase the first word in the input vector
 			//cout << "This is vector after first word is erased: " << inputs[i] << endl;
 
-			if (inputs[i].at(0) != '\"' || inputs[i].at(inputs[i].find(' ') - 1) != '\"') {
+			if (inputs[i].at(0) != '\"' || (inputs[i].substr(1).find('\"') == -1)) { //Verify first value is " and at least one more " exists
 				cout << "unsuccessful" << endl;
 				continue;
 			}
 			else {
-				name = inputs[i].substr(1, inputs[i].find(' ') - 2); //Put the second word of the input in name (+1 and -2 at beginning and end to avoid quotes)
-				inputs[i].erase(0, inputs[i].find(' ') + 1); //Erase the second word in the input vector
+				name = inputs[i].substr(1); //Put the second word of the input in name just past the first quote
+				name = name.substr(0, name.find('\"'));
+				
+				bool nameValid = true;
+				//Verify name is valid
+				for (int j = 0; j < name.size(); j++) {
+					if (!(std::isalpha(name.at(j)) || name.at(j) == ' ')) { //check if any character is not alphabetic or a space
+						cout << "unsuccessful" << endl; //If the character at j is not a digit, print unsuccessful and break
+						nameValid = false;
+						break;
+					}
+				}
+				if (!nameValid) {
+					continue;
+				}
+				inputs[i].erase(0, name.size()+3); //Erase the second word in the input vector (+3 to account for two quotes and space)
 
 			}
 			if (inputs[i].size() != 8) { //If the remaining value is not 8 digits, the ID number is the wrong size
@@ -57,13 +72,21 @@ int main() {
 			}
 			else {
 				id = inputs[i]; //Remaining word in string should be the id
+
+				bool idValid = true;
 				//check each character, if a nondigit is detected then not valid number
 				for (int j = 0; j < 8; j++) {
 					if (!std::isdigit(id.at(j))) {
 						cout << "unsuccessful" << endl; //If the character at j is not a digit, print unsuccessful and break
+						idValid = false;
 						break;
 					}
 				}
+
+				if (!idValid) {
+					continue;
+				}
+
 				id = inputs[i]; //If this point is reached, id is valid 8 digit number & name was succesfully added
 
 				Node *node = new Node(name, stoi(id));
